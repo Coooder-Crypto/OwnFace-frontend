@@ -27,7 +27,6 @@ export default function RegisterPage() {
     setError(undefined);
     setResponse(undefined);
     setStatus(undefined);
-
     try {
       const payload: Record<string, unknown> = {
         userId,

@@ -22,7 +22,6 @@ export default function MetricsPage() {
   const fetchMetrics = useCallback(async () => {
     setLoading(true);
     setError(undefined);
-
     const result = await getJson<MetricsResponse>("/metrics");
     setStatus(result.status);
 

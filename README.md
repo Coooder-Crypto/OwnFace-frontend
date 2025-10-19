@@ -12,10 +12,12 @@ Next.js app for the BioZero hackathon demo. The console orchestrates the flow be
 ### Requirements
 - Node.js 18+.
 - Local backend service reachable at `http://localhost:4000` (override with `NEXT_PUBLIC_API_BASE_URL`).
+- WalletConnect project ID for RainbowKit (`NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`).
+- Sepolia RPC endpoint if you plan to hit testnet (`NEXT_PUBLIC_SEPOLIA_RPC_URL`).
 
 ### Getting Started
 1. Install dependencies: `npm install`.
-2. Copy `.env.example` to `.env.local` and adjust `NEXT_PUBLIC_API_BASE_URL` if your backend runs elsewhere.
+2. Copy `.env.example` to `.env.local` and adjust `NEXT_PUBLIC_API_BASE_URL`, `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`, and `NEXT_PUBLIC_SEPOLIA_RPC_URL` as needed.
 3. Start the dev server: `npm run dev`.
 4. Visit [http://localhost:3000](http://localhost:3000).
 
@@ -25,6 +27,8 @@ Next.js app for the BioZero hackathon demo. The console orchestrates the flow be
 - `src/app/authenticate/page.tsx`: Proof request UI.
 - `src/app/metrics/page.tsx`: Metrics dashboard.
 - `src/lib/api.ts`: REST helpers with base URL management.
+- `src/components/RainbowKitProvider.tsx`: Wallet configuration (RainbowKit + Wagmi + React Query).
+- `src/components/layout/Header.tsx`: Top navigation with RainbowKit connect button.
 - `src/components/response-panel.tsx`: JSON viewer for API responses.
 
 ### Styling & Linting
