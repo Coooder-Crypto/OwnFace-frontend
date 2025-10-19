@@ -47,25 +47,31 @@ export default function MetricsPage() {
   }, [fetchMetrics]);
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Pipeline Metrics</h1>
-          <p className="mt-2 max-w-2xl text-sm text-slate-300">
-            Observability view for the local backend. Use this dashboard to monitor proof
-            latency, throughput, and recent outcomes during the hackathon demo.
-          </p>
+    <div className="space-y-10">
+      <section className="glass-card relative overflow-hidden px-6 py-7">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.18),transparent_55%)]" />
+        <div className="relative flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div className="space-y-3">
+            <span className="tag">Step 3 · Observability</span>
+            <h1 className="text-3xl font-semibold md:text-4xl">
+              Monitor proving health and <span className="gradient-text">demo readiness</span>
+            </h1>
+            <p className="max-w-2xl text-sm text-slate-300/85">
+              Track how many registrations and authentications have been processed, keep an eye on
+              proof latency, and verify that the backend is delivering payloads before wiring the
+              on-chain verifier.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={fetchMetrics}
+            disabled={loading}
+            className="inline-flex h-10 items-center justify-center rounded-lg bg-gradient-to-r from-[#6366f1] to-[#7c3aed] px-4 text-sm font-semibold text-white shadow-lg shadow-indigo-500/40 transition hover:shadow-indigo-500/60 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {loading ? "Refreshing…" : "Refresh metrics"}
+          </button>
         </div>
-
-        <button
-          type="button"
-          onClick={fetchMetrics}
-          disabled={loading}
-          className="inline-flex h-10 items-center justify-center rounded-lg bg-indigo-500 px-4 text-sm font-semibold text-white transition hover:bg-indigo-400 disabled:cursor-not-allowed disabled:bg-slate-700"
-        >
-          {loading ? "Refreshing…" : "Refresh"}
-        </button>
-      </header>
+      </section>
 
       <section className="grid gap-4 md:grid-cols-3">
         <MetricCard
@@ -94,10 +100,10 @@ export default function MetricsPage() {
         />
       </section>
 
-      <div className="text-xs text-slate-400">
+      <div className="glass-card border border-white/10 px-6 py-5 text-xs text-slate-300/90">
         {lastUpdated
           ? `Last updated ${lastUpdated.toLocaleTimeString()}`
-          : "No data fetched yet"}
+          : "No metrics fetched yet"}
       </div>
 
       <ResponsePanel
@@ -118,11 +124,11 @@ interface MetricCardProps {
 
 function MetricCard({ label, value }: MetricCardProps) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 shadow shadow-slate-950/40">
+    <div className="glass-card border border-white/12 p-5">
       <div className="text-xs uppercase tracking-wide text-slate-400">
         {label}
       </div>
-      <div className="mt-2 text-2xl font-semibold text-slate-100">{value}</div>
+      <div className="mt-2 text-2xl font-semibold text-white">{value}</div>
     </div>
   );
 }

@@ -38,16 +38,16 @@ export function ResponsePanel({
   }, [data, error, loading]);
 
   return (
-    <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-950/40 p-4">
-      <div className="flex items-center justify-between text-xs uppercase tracking-wide text-slate-400">
+    <div className="glass-card space-y-3 border border-white/10 p-4">
+      <div className="flex items-center justify-between text-[11px] uppercase tracking-wide text-slate-300/80">
         <span>{title}</span>
         {status !== undefined && (
-          <span className="rounded bg-slate-800 px-2 py-1 text-[10px] text-slate-300">
+          <span className="rounded-full bg-white/10 px-2 py-1 text-[10px] text-slate-200">
             status {status}
           </span>
         )}
       </div>
-      <pre className="max-h-60 overflow-auto rounded-lg bg-slate-900/70 p-4 text-xs text-slate-200">
+      <pre className="max-h-60 overflow-auto rounded-lg border border-white/5 bg-black/60 p-4 text-xs text-lime-200/90 shadow-inner">
         {body}
       </pre>
     </div>

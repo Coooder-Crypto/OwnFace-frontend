@@ -58,20 +58,40 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="text-3xl font-semibold tracking-tight">Register Subject</h1>
-        <p className="mt-2 max-w-2xl text-sm text-slate-300">
-          Capture or upload a biometric embedding and send it to the backend. The service
-          responds with the Pedersen commitment bundle and a nonce for future proofs.
-        </p>
-      </header>
+    <div className="space-y-10">
+      <section className="glass-card relative overflow-hidden px-6 py-7">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.18),transparent_55%)]" />
+        <div className="relative space-y-3">
+          <span className="tag">Step 1 · Registration</span>
+          <h1 className="text-3xl font-semibold md:text-4xl">
+            Capture embeddings and mint <span className="gradient-text">Pedersen commitments</span>
+          </h1>
+          <p className="max-w-2xl text-sm text-slate-300/85">
+            Upload a quantised biometric vector or let the backend mock one for you. The response
+            returns the commitment bundle plus a nonce required for downstream authentication.
+          </p>
+          <div className="grid gap-3 pt-2 sm:grid-cols-3">
+            <div className="rounded-lg border border-white/10 bg-white/5 p-3">
+              <div className="text-xs uppercase tracking-wide text-slate-400">Inputs</div>
+              <div className="mt-1 text-sm text-white">User identifier + embedding file</div>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-white/5 p-3">
+              <div className="text-xs uppercase tracking-wide text-slate-400">Backend</div>
+              <div className="mt-1 text-sm text-white">Computes commitment vector + nonce</div>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-white/5 p-3">
+              <div className="text-xs uppercase tracking-wide text-slate-400">Output</div>
+              <div className="mt-1 text-sm text-white">Persist for chain registration</div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <form
         onSubmit={handleSubmit}
-        className="space-y-6 rounded-2xl border border-slate-800 bg-slate-900/50 p-6 shadow-lg shadow-slate-950/40"
+        className="glass-card space-y-6 border border-white/12 px-6 py-7"
       >
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2">
           <label className="flex flex-col gap-2 text-sm text-slate-200">
             User ID
             <input
@@ -80,7 +100,7 @@ export default function RegisterPage() {
               onChange={(event) => setUserId(event.target.value)}
               required
               placeholder="alice@example"
-              className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none ring-offset-slate-900 transition focus:border-slate-500 focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+              className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white outline-none transition focus:border-[#7c3aed] focus:ring-2 focus:ring-[#7c3aed]/40"
             />
           </label>
 
@@ -90,8 +110,8 @@ export default function RegisterPage() {
               type="text"
               value={note}
               onChange={(event) => setNote(event.target.value)}
-              placeholder="e.g., Registration camera 1"
-              className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none ring-offset-slate-900 transition focus:border-slate-500 focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+              placeholder="e.g. registration camera #1"
+              className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white outline-none transition focus:border-[#7c3aed] focus:ring-2 focus:ring-[#7c3aed]/40"
             />
           </label>
         </div>
@@ -105,19 +125,19 @@ export default function RegisterPage() {
               onChange={(event) => {
                 setEmbeddingFile(event.target.files?.[0] ?? null);
               }}
-              className="rounded-md border border-dashed border-slate-700 bg-slate-950 px-3 py-4 text-slate-300 outline-none transition hover:border-slate-500"
+              className="rounded-lg border border-dashed border-white/20 bg-white/5 px-3 py-4 text-sm text-slate-200 outline-none transition hover:border-white/40"
             />
           </label>
-          <p className="mt-2 text-xs text-slate-400">
-            Provide a quantized embedding file if available. When omitted, the backend will
-            generate a demo vector.
+          <p className="mt-2 text-xs text-slate-400/90">
+            Provide a quantised embedding for realistic output. When omitted, the backend produces a
+            demo payload using seeded randomness.
           </p>
         </div>
 
         <button
           type="submit"
           disabled={loading || !userId}
-          className="inline-flex items-center justify-center rounded-lg bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-slate-700"
+          className="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-[#7c3aed] to-[#ec4899] px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-violet-500/40 transition hover:shadow-violet-500/60 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? "Submitting…" : "Register User"}
         </button>

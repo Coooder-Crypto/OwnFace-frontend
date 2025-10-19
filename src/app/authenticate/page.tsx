@@ -60,23 +60,41 @@ export default function AuthenticatePage() {
   };
 
   return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="text-3xl font-semibold tracking-tight">
-          Authenticate Subject
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm text-slate-300">
-          Upload a fresh embedding or capture data from the device, submit it to the backend,
-          and collect the proof package that will later be relayed to the on-chain verifier.
-        </p>
-      </header>
+    <div className="space-y-10">
+      <section className="glass-card relative overflow-hidden px-6 py-7">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.2),transparent_60%)]" />
+        <div className="relative space-y-3">
+          <span className="tag">Step 2 · Authentication</span>
+          <h1 className="text-3xl font-semibold md:text-4xl">
+            Request a <span className="gradient-text">proof of proximity</span> to the enrolled vector
+          </h1>
+          <p className="max-w-2xl text-sm text-slate-300/85">
+            Submit a fresh embedding, optionally provide the stored nonce, and receive the proof
+            package that will later be relayed to the BioZero verifier contract.
+          </p>
+          <div className="grid gap-3 pt-2 sm:grid-cols-3">
+            <div className="rounded-lg border border-white/10 bg-white/5 p-3">
+              <div className="text-xs uppercase tracking-wide text-slate-400">Challenge</div>
+              <div className="mt-1 text-sm text-white">Fiat–Shamir nonce + embedding payload</div>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-white/5 p-3">
+              <div className="text-xs uppercase tracking-wide text-slate-400">Prover</div>
+              <div className="mt-1 text-sm text-white">Generates Γ fields + mock Groth16 proof</div>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-white/5 p-3">
+              <div className="text-xs uppercase tracking-wide text-slate-400">Next</div>
+              <div className="mt-1 text-sm text-white">Forward package to the contract runner</div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <form
         onSubmit={handleSubmit}
-        className="space-y-6 rounded-2xl border border-slate-800 bg-slate-900/50 p-6 shadow-lg shadow-slate-950/40"
+        className="glass-card space-y-6 border border-white/12 px-6 py-7"
       >
-        <div className="grid gap-4 sm:grid-cols-3">
-          <label className="flex flex-col gap-2 text-sm text-slate-200 sm:col-span-1">
+        <div className="grid gap-4 md:grid-cols-3">
+          <label className="flex flex-col gap-2 text-sm text-slate-200">
             User ID
             <input
               type="text"
@@ -84,29 +102,29 @@ export default function AuthenticatePage() {
               onChange={(event) => setUserId(event.target.value)}
               required
               placeholder="alice@example"
-              className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none ring-offset-slate-900 transition focus:border-slate-500 focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+              className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white outline-none transition focus:border-[#7c3aed] focus:ring-2 focus:ring-[#7c3aed]/40"
             />
           </label>
 
-          <label className="flex flex-col gap-2 text-sm text-slate-200 sm:col-span-1">
+          <label className="flex flex-col gap-2 text-sm text-slate-200">
             Nonce (optional)
             <input
               type="text"
               value={nonce}
               onChange={(event) => setNonce(event.target.value)}
               placeholder="nonce from register"
-              className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none ring-offset-slate-900 transition focus:border-slate-500 focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+              className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white outline-none transition focus:border-[#7c3aed] focus:ring-2 focus:ring-[#7c3aed]/40"
             />
           </label>
 
-          <label className="flex flex-col gap-2 text-sm text-slate-200 sm:col-span-1">
+          <label className="flex flex-col gap-2 text-sm text-slate-200">
             Optional note
             <input
               type="text"
               value={note}
               onChange={(event) => setNote(event.target.value)}
               placeholder="test run description"
-              className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none ring-offset-slate-900 transition focus:border-slate-500 focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+              className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white outline-none transition focus:border-[#7c3aed] focus:ring-2 focus:ring-[#7c3aed]/40"
             />
           </label>
         </div>
@@ -118,19 +136,19 @@ export default function AuthenticatePage() {
               type="file"
               accept=".json,.txt,.bin,.csv"
               onChange={(event) => setEmbeddingFile(event.target.files?.[0] ?? null)}
-              className="rounded-md border border-dashed border-slate-700 bg-slate-950 px-3 py-4 text-slate-300 outline-none transition hover:border-slate-500"
+              className="rounded-lg border border-dashed border-white/20 bg-white/5 px-3 py-4 text-sm text-slate-200 outline-none transition hover:border-white/40"
             />
           </label>
-          <p className="mt-2 text-xs text-slate-400">
-            Provide the fresh embedding to compare against the commitment. The backend can
-            generate placeholder vectors if omitted.
+          <p className="mt-2 text-xs text-slate-400/90">
+            Supply a fresh embedding for the comparison. Leave blank to let the backend seed a demo
+            vector for faster iterations.
           </p>
         </div>
 
         <button
           type="submit"
           disabled={loading || !userId}
-          className="inline-flex items-center justify-center rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-slate-700"
+          className="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-[#0ea5e9] to-[#6366f1] px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/40 transition hover:shadow-sky-500/60 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? "Submitting…" : "Request Proof"}
         </button>

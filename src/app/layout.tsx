@@ -27,11 +27,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background text-foreground flex flex-col`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen text-foreground`}
+      >
         <RainbowKitProvider>
           <Header />
           <main className="flex-1">
-            <div className="max-w-7xl mx-auto px-4 pt-24 pb-8">{children}</div>
+            <div className="mx-auto w-full max-w-6xl px-4 pt-24 pb-16 md:px-6">
+              {children}
+            </div>
           </main>
           {/** Footer disabled per spec */}
           {/* <Toaster /> */}
