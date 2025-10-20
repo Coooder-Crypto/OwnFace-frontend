@@ -13,6 +13,8 @@ OwnFace lets users prove facial similarity with zero-knowledge proofs. The front
 - WalletConnect project ID (`NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`).
 - Sepolia RPC endpoint (`NEXT_PUBLIC_SEPOLIA_RPC_URL`) if publishing to testnet.
 - `OwnFaceRegistry` contract address (`NEXT_PUBLIC_REGISTRY_ADDRESS`).
+- (Optional) Groth16 verifier address for reference (`NEXT_PUBLIC_VERIFIER_ADDRESS`).
+- (Optional) Block explorer base URL (`NEXT_PUBLIC_BLOCK_EXPLORER_BASE`, defaults to Sepolia Etherscan).
 
 ### Getting Started
 1. Install dependencies: `npm install`.
