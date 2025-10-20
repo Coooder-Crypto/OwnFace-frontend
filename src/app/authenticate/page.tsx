@@ -1,14 +1,25 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
+import { useAccount, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { keccak256, stringToBytes, isHex } from "viem";
 import { postJson } from "@/lib/api";
 import { fileToBase64 } from "@/lib/file";
 import { ResponsePanel } from "@/components/response-panel";
+import { CameraCapture } from "@/components/camera-capture";
+import { registryAbi } from "@/lib/contracts";
 
 interface AuthResponse {
   userId: string;
-  status: "accepted" | "rejected" | "pending" | string;
-  distance?: number;
+  status: "accepted" | "rejected" | string;
+  distance: number;
+  threshold: number;
+  transcriptDigest: string;
+  commitmentHash: string;
+  commitmentPoint: string;
+  proofHash: string;
+  proof: unknown;
+  publicSignals: string[];
   [key: string]: unknown;
 }
 
@@ -17,10 +28,28 @@ export default function AuthenticatePage() {
   const [nonce, setNonce] = useState("");
   const [note, setNote] = useState("");
   const [embeddingFile, setEmbeddingFile] = useState<File | null>(null);
+  const [cameraData, setCameraData] = useState<string | null>(null);
+  const [mode, setMode] = useState<"upload" | "camera">("upload");
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<AuthResponse | undefined>();
   const [status, setStatus] = useState<number | undefined>(undefined);
   const [error, setError] = useState<string | undefined>(undefined);
+  const [txHash, setTxHash] = useState<`0x${string}` | undefined>(undefined);
+  const [txError, setTxError] = useState<string | undefined>(undefined);
+
+  const registryAddress = useMemo(() => {
+    const value = process.env.NEXT_PUBLIC_REGISTRY_ADDRESS;
+    if (!value || !isHex(value)) {
+      return undefined;
+    }
+    return value as `0x${string}`;
+  }, []);
+
+  const { isConnected } = useAccount();
+  const { writeContractAsync } = useWriteContract();
+  const { status: txStatus, data: txReceipt } = useWaitForTransactionReceipt({
+    hash: txHash,
+  });
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -28,6 +57,8 @@ export default function AuthenticatePage() {
     setError(undefined);
     setResponse(undefined);
     setStatus(undefined);
+    setTxError(undefined);
+    setTxHash(undefined);
     try {
       const payload: Record<string, unknown> = {
         userId,
@@ -35,10 +66,22 @@ export default function AuthenticatePage() {
         note: note || undefined,
       };
 
-      if (embeddingFile) {
+      if (mode === "camera") {
+        if (!cameraData) {
+          setError("请先使用摄像头捕获图像。");
+          setLoading(false);
+          return;
+        }
+        payload.embedding = cameraData;
+        payload.embeddingType = "camera/jpeg";
+      } else if (embeddingFile) {
         payload.embedding = await fileToBase64(embeddingFile);
         payload.embeddingName = embeddingFile.name;
         payload.embeddingType = embeddingFile.type;
+      } else {
+        setError("请提供 embedding 文件或使用摄像头捕获。");
+        setLoading(false);
+        return;
       }
 
       const result = await postJson<AuthResponse>("/authenticate", payload);
@@ -50,6 +93,34 @@ export default function AuthenticatePage() {
       }
 
       setResponse(result.data);
+
+      if (
+        registryAddress &&
+        isConnected &&
+        result.data.transcriptDigest &&
+        result.data.proofHash
+      ) {
+        try {
+          const tx = await writeContractAsync({
+            address: registryAddress,
+            abi: registryAbi,
+            functionName: "authenticate",
+            args: [
+              keccak256(stringToBytes(userId)),
+              result.data.status === "accepted",
+              BigInt(result.data.distance),
+              BigInt(result.data.threshold),
+              result.data.transcriptDigest as `0x${string}`,
+              result.data.proofHash as `0x${string}`,
+            ],
+          });
+          setTxHash(tx);
+        } catch (chainErr) {
+          const message =
+            chainErr instanceof Error ? chainErr.message : "合约调用失败";
+          setTxError(message);
+        }
+      }
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Unexpected error occurred.";
@@ -70,23 +141,61 @@ export default function AuthenticatePage() {
           </h1>
           <p className="max-w-2xl text-sm text-slate-300/85">
             Submit a fresh embedding, optionally provide the stored nonce, and receive the proof
-            package that will later be relayed to the BioZero verifier contract.
+            package that will later be relayed to the verifier contract.
           </p>
-          <div className="grid gap-3 pt-2 sm:grid-cols-3">
-            <div className="rounded-lg border border-white/10 bg-white/5 p-3">
-              <div className="text-xs uppercase tracking-wide text-slate-400">Challenge</div>
-              <div className="mt-1 text-sm text-white">Fiat–Shamir nonce + embedding payload</div>
-            </div>
-            <div className="rounded-lg border border-white/10 bg-white/5 p-3">
-              <div className="text-xs uppercase tracking-wide text-slate-400">Prover</div>
-              <div className="mt-1 text-sm text-white">Generates Γ fields + mock Groth16 proof</div>
-            </div>
-            <div className="rounded-lg border border-white/10 bg-white/5 p-3">
-              <div className="text-xs uppercase tracking-wide text-slate-400">Next</div>
-              <div className="mt-1 text-sm text-white">Forward package to the contract runner</div>
-            </div>
-          </div>
         </div>
+      </section>
+
+      <section className="glass-card space-y-4 border border-white/12 px-6 py-6">
+        <div className="flex items-center gap-3 text-sm text-slate-200">
+          <button
+            type="button"
+            onClick={() => {
+              setMode("upload");
+              setCameraData(null);
+            }}
+            className={`rounded-lg px-3 py-1.5 transition ${
+              mode === "upload"
+                ? "bg-white/15 text-white shadow shadow-sky-500/30"
+                : "border border-white/10 text-slate-300 hover:bg-white/10"
+            }`}
+          >
+            上传文件
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMode("camera");
+              setEmbeddingFile(null);
+            }}
+            className={`rounded-lg px-3 py-1.5 transition ${
+              mode === "camera"
+                ? "bg-white/15 text-white shadow shadow-sky-500/30"
+                : "border border-white/10 text-slate-300 hover:bg-white/10"
+            }`}
+          >
+            摄像头捕获
+          </button>
+        </div>
+        {mode === "camera" ? (
+          <CameraCapture
+            onCapture={(base64) => setCameraData(base64)}
+            onClear={() => setCameraData(null)}
+          />
+        ) : (
+          <label className="flex flex-col gap-2 text-sm text-slate-200">
+            Embedding 文件
+            <input
+              type="file"
+              accept=".json,.txt,.bin,.csv"
+              onChange={(event) => setEmbeddingFile(event.target.files?.[0] ?? null)}
+              className="rounded-lg border border-dashed border-white/20 bg-white/5 px-3 py-4 text-sm text-slate-200 outline-none transition hover:border-white/40"
+            />
+            <span className="text-xs text-slate-400/90">
+              可上传量化后的 embedding；或切换到摄像头模式自动捕获图像。
+            </span>
+          </label>
+        )}
       </section>
 
       <form
@@ -129,22 +238,6 @@ export default function AuthenticatePage() {
           </label>
         </div>
 
-        <div>
-          <label className="flex flex-col gap-2 text-sm text-slate-200">
-            Embedding file
-            <input
-              type="file"
-              accept=".json,.txt,.bin,.csv"
-              onChange={(event) => setEmbeddingFile(event.target.files?.[0] ?? null)}
-              className="rounded-lg border border-dashed border-white/20 bg-white/5 px-3 py-4 text-sm text-slate-200 outline-none transition hover:border-white/40"
-            />
-          </label>
-          <p className="mt-2 text-xs text-slate-400/90">
-            Supply a fresh embedding for the comparison. Leave blank to let the backend seed a demo
-            vector for faster iterations.
-          </p>
-        </div>
-
         <button
           type="submit"
           disabled={loading || !userId}
@@ -153,6 +246,29 @@ export default function AuthenticatePage() {
           {loading ? "Submitting…" : "Request Proof"}
         </button>
       </form>
+
+      {registryAddress && (
+        <div className="glass-card space-y-3 border border-white/12 px-6 py-5">
+          <div className="text-sm font-semibold text-white">链上同步状态</div>
+          {!isConnected && (
+            <p className="text-xs text-slate-400">
+              请连接钱包以调用合约：<code className="text-[10px]">{registryAddress}</code>
+            </p>
+          )}
+          {txError && <p className="text-xs text-rose-400">合约调用失败：{txError}</p>}
+          {txHash && (
+            <div className="text-xs text-slate-300">
+              交易 <code className="break-all text-[10px]">{txHash}</code>{" "}
+              {txStatus === "pending" && <span className="text-amber-300">确认中…</span>}
+              {txStatus === "success" && (
+                <span className="text-emerald-400">
+                  已确认（区块 {txReceipt?.blockNumber?.toString()})
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       <ResponsePanel
         title="Prover Response"

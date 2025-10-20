@@ -1,14 +1,23 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
+import { useAccount, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { keccak256, stringToBytes, isHex } from "viem";
 import { postJson } from "@/lib/api";
 import { fileToBase64 } from "@/lib/file";
 import { ResponsePanel } from "@/components/response-panel";
+import { CameraCapture } from "@/components/camera-capture";
+import { registryAbi } from "@/lib/contracts";
 
 interface RegisterResponse {
   userId: string;
-  commitment: string;
+  commitmentHash: string;
+  commitmentPoint: string;
+  blinding: string;
   nonce: string;
+  nonceHash: string;
+  vectorLength: number;
+  vectorChecksum: string;
   [key: string]: unknown;
 }
 
@@ -16,10 +25,28 @@ export default function RegisterPage() {
   const [userId, setUserId] = useState("");
   const [note, setNote] = useState("");
   const [embeddingFile, setEmbeddingFile] = useState<File | null>(null);
+  const [cameraData, setCameraData] = useState<string | null>(null);
+  const [mode, setMode] = useState<"upload" | "camera">("upload");
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<RegisterResponse | undefined>();
   const [status, setStatus] = useState<number | undefined>(undefined);
   const [error, setError] = useState<string | undefined>(undefined);
+  const [txHash, setTxHash] = useState<`0x${string}` | undefined>(undefined);
+  const [txError, setTxError] = useState<string | undefined>(undefined);
+
+  const registryAddress = useMemo(() => {
+    const value = process.env.NEXT_PUBLIC_REGISTRY_ADDRESS;
+    if (!value || !isHex(value)) {
+      return undefined;
+    }
+    return value as `0x${string}`;
+  }, []);
+
+  const { isConnected } = useAccount();
+  const { writeContractAsync } = useWriteContract();
+  const { data: txReceipt, status: txStatus } = useWaitForTransactionReceipt({
+    hash: txHash,
+  });
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -27,16 +54,30 @@ export default function RegisterPage() {
     setError(undefined);
     setResponse(undefined);
     setStatus(undefined);
+    setTxError(undefined);
+    setTxHash(undefined);
     try {
       const payload: Record<string, unknown> = {
         userId,
         note: note || undefined,
       };
 
-      if (embeddingFile) {
+      if (mode === "camera") {
+        if (!cameraData) {
+          setError("请先使用摄像头捕获图像。");
+          setLoading(false);
+          return;
+        }
+        payload.embedding = cameraData;
+        payload.embeddingType = "camera/jpeg";
+      } else if (embeddingFile) {
         payload.embedding = await fileToBase64(embeddingFile);
         payload.embeddingName = embeddingFile.name;
         payload.embeddingType = embeddingFile.type;
+      } else {
+        setError("请提供 embedding 文件或使用摄像头捕获。");
+        setLoading(false);
+        return;
       }
 
       const result = await postJson<RegisterResponse>("/register", payload);
@@ -48,6 +89,35 @@ export default function RegisterPage() {
       }
 
       setResponse(result.data);
+
+      if (
+        registryAddress &&
+        isConnected &&
+        result.data.commitmentHash &&
+        result.data.nonceHash &&
+        result.data.commitmentPoint &&
+        result.data.blinding
+      ) {
+        try {
+          const tx = await writeContractAsync({
+            address: registryAddress,
+            abi: registryAbi,
+            functionName: "register",
+            args: [
+              keccak256(stringToBytes(userId)),
+              result.data.commitmentHash as `0x${string}`,
+              result.data.nonceHash as `0x${string}`,
+              result.data.commitmentPoint as `0x${string}`,
+              result.data.blinding as `0x${string}`,
+            ],
+          });
+          setTxHash(tx);
+        } catch (chainErr) {
+          const message =
+            chainErr instanceof Error ? chainErr.message : "合约调用失败";
+          setTxError(message);
+        }
+      }
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Unexpected error occurred.";
@@ -87,6 +157,60 @@ export default function RegisterPage() {
         </div>
       </section>
 
+      <section className="glass-card space-y-4 border border-white/12 px-6 py-6">
+        <div className="flex items-center gap-3 text-sm text-slate-200">
+          <button
+            type="button"
+            onClick={() => {
+              setMode("upload");
+              setCameraData(null);
+            }}
+            className={`rounded-lg px-3 py-1.5 transition ${
+              mode === "upload"
+                ? "bg-white/15 text-white shadow shadow-violet-500/30"
+                : "border border-white/10 text-slate-300 hover:bg-white/10"
+            }`}
+          >
+            上传文件
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMode("camera");
+              setEmbeddingFile(null);
+            }}
+            className={`rounded-lg px-3 py-1.5 transition ${
+              mode === "camera"
+                ? "bg-white/15 text-white shadow shadow-violet-500/30"
+                : "border border-white/10 text-slate-300 hover:bg-white/10"
+            }`}
+          >
+            摄像头捕获
+          </button>
+        </div>
+        {mode === "camera" ? (
+          <CameraCapture
+            onCapture={(base64) => setCameraData(base64)}
+            onClear={() => setCameraData(null)}
+          />
+        ) : (
+          <label className="flex flex-col gap-2 text-sm text-slate-200">
+            Embedding 文件
+            <input
+              type="file"
+              accept=".json,.txt,.bin,.csv"
+              onChange={(event) => {
+                setEmbeddingFile(event.target.files?.[0] ?? null);
+              }}
+              className="rounded-lg border border-dashed border-white/20 bg-white/5 px-3 py-4 text-sm text-slate-200 outline-none transition hover:border-white/40"
+            />
+            <span className="text-xs text-slate-400/90">
+              提供量化后的 embedding 文件；若未提供，可切换到摄像头模式自动捕获。
+            </span>
+          </label>
+        )}
+      </section>
+
       <form
         onSubmit={handleSubmit}
         className="glass-card space-y-6 border border-white/12 px-6 py-7"
@@ -116,24 +240,6 @@ export default function RegisterPage() {
           </label>
         </div>
 
-        <div>
-          <label className="flex flex-col gap-2 text-sm text-slate-200">
-            Embedding file
-            <input
-              type="file"
-              accept=".json,.txt,.bin,.csv"
-              onChange={(event) => {
-                setEmbeddingFile(event.target.files?.[0] ?? null);
-              }}
-              className="rounded-lg border border-dashed border-white/20 bg-white/5 px-3 py-4 text-sm text-slate-200 outline-none transition hover:border-white/40"
-            />
-          </label>
-          <p className="mt-2 text-xs text-slate-400/90">
-            Provide a quantised embedding for realistic output. When omitted, the backend produces a
-            demo payload using seeded randomness.
-          </p>
-        </div>
-
         <button
           type="submit"
           disabled={loading || !userId}
@@ -142,6 +248,29 @@ export default function RegisterPage() {
           {loading ? "Submitting…" : "Register User"}
         </button>
       </form>
+
+      {registryAddress && (
+        <div className="glass-card space-y-3 border border-white/12 px-6 py-5">
+          <div className="text-sm font-semibold text-white">链上同步状态</div>
+          {!isConnected && (
+            <p className="text-xs text-slate-400">
+              请连接钱包以调用合约：<code className="text-[10px]">{registryAddress}</code>
+            </p>
+          )}
+          {txError && <p className="text-xs text-rose-400">合约调用失败：{txError}</p>}
+          {txHash && (
+            <div className="text-xs text-slate-300">
+              交易 <code className="break-all text-[10px]">{txHash}</code>{" "}
+              {txStatus === "pending" && <span className="text-amber-300">确认中…</span>}
+              {txStatus === "success" && (
+                <span className="text-emerald-400">
+                  已确认（区块 {txReceipt?.blockNumber?.toString()})
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       <ResponsePanel
         title="Backend Response"
