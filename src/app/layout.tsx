@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "OwnFace Demo Console",
+  title: "OwnFace Demo",
   description:
     "Own Your Face Before Own Your Data. Explore the OwnFace flow: register embeddings, request auth proofs, and inspect metrics.",
 };

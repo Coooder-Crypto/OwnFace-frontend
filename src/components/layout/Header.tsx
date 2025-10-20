@@ -6,10 +6,8 @@ import { usePathname } from "next/navigation";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 const navLinks = [
-  { href: "/", label: "Overview" },
-  { href: "/register", label: "Register" },
-  { href: "/authenticate", label: "Authenticate" },
-  { href: "/metrics", label: "Metrics" },
+  { href: "/", label: "Project Overview" },
+  { href: "/workflow", label: "Auth Workflow" },
 ];
 
 export function Header() {
@@ -23,7 +21,7 @@ export function Header() {
     <header className="fixed inset-x-0 top-0 z-40 border-b border-slate-800/40 bg-[rgba(5,5,16,0.85)] backdrop-blur-xl">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 md:px-6">
         <Link href="/" className="text-lg font-semibold tracking-tight text-slate-100">
-          <span className="gradient-text">OwnFace Console</span>
+          <span className="gradient-text">OwnFace</span>
         </Link>
         <nav className="hidden items-center gap-2 text-sm font-medium text-slate-300 md:flex">
           {navLinks.map((link) => (
@@ -41,9 +39,6 @@ export function Header() {
           ))}
         </nav>
         <div className="flex items-center gap-3">
-          <div className="hidden text-xs text-slate-400 lg:block">
-            <span className="tag">Own Your Face Before Own Your Data</span>
-          </div>
           <ConnectButton />
           <button
             type="button"
