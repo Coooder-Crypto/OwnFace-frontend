@@ -17,7 +17,7 @@ const projectId =
   process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? "demo-project-id";
 
 const config = getDefaultConfig({
-  appName: "BioZero Demo",
+  appName: "OwnFace Demo",
   projectId,
   chains: [sepolia],
   transports: {

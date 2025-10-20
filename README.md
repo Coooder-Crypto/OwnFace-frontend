@@ -1,6 +1,6 @@
-## BioZero Frontend Console
+## OwnFace Frontend Console
 
-Next.js app for the BioZero hackathon demo. The console orchestrates the flow between browser, local backend prover, and (soon) on-chain verifier.
+OwnFace 的官方演示控制台，Slogan：**Own Your Face Before Own Your Data**。应用负责串联浏览器、后端证明服务和（即将上线的）链上验证器。
 
 ### Features
 - Overview page summarising the workflow and setup steps.
@@ -14,7 +14,7 @@ Next.js app for the BioZero hackathon demo. The console orchestrates the flow be
 - Local backend service reachable at `http://localhost:4000` (override with `NEXT_PUBLIC_API_BASE_URL`).
 - WalletConnect project ID for RainbowKit (`NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`).
 - Sepolia RPC endpoint if you plan to hit testnet (`NEXT_PUBLIC_SEPOLIA_RPC_URL`).
-- BioZeroRegistry 合约地址 (`NEXT_PUBLIC_REGISTRY_ADDRESS`).
+- OwnFaceRegistry 合约地址 (`NEXT_PUBLIC_REGISTRY_ADDRESS`).
 
 ### Getting Started
 1. Install dependencies: `npm install`.

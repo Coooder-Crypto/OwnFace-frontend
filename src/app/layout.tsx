@@ -15,9 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BioZero Demo Console",
+  title: "OwnFace Demo Console",
   description:
-    "Hackathon prototype for BioZero: register users, request auth proofs, and inspect metrics.",
+    "Own Your Face Before Own Your Data. Explore the OwnFace flow: register embeddings, request auth proofs, and inspect metrics.",
 };
 
 export default function RootLayout({

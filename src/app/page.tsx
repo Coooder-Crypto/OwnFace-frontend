@@ -31,15 +31,15 @@ export default function Home() {
       <section className="glass-card relative overflow-hidden px-8 py-10">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.25),transparent_55%)]" />
         <div className="relative flex flex-col gap-6">
-          <span className="tag w-fit">Hackathon Prototype</span>
+          <span className="tag w-fit">Own Your Face Before Own Your Data</span>
           <div className="max-w-3xl space-y-4">
             <h1 className="text-4xl font-semibold leading-tight md:text-5xl">
-              Launch the <span className="gradient-text">BioZero</span> authentication flow
+              Launch the <span className="gradient-text">OwnFace</span> authentication flow
             </h1>
             <p className="text-base text-slate-200/80">
-              Drive the zero-knowledge biometric login demo end-to-end. Capture embeddings,
-              wrap them in commitments, request proofs from the local worker, and benchmark
-              the pipeline before shipping the on-chain verifier.
+              Drive the zero-knowledge biometric login experience with OwnFace. Capture embeddings,
+              wrap them in commitments, request proofs from the local worker, and benchmark the
+              pipeline before wiring in the on-chain verifier.
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -79,7 +79,7 @@ export default function Home() {
           <div className="relative space-y-4">
             <h2 className="text-xl font-semibold text-white">Implementation Stages</h2>
             <p className="text-sm text-slate-300/90">
-              The console mirrors the BioZero workflow so you can demonstrate concepts quickly:
+              The console mirrors the OwnFace workflow so you can demonstrate concepts quickly:
             </p>
             <ol className="space-y-3 text-sm text-slate-200/85">
               <li>
