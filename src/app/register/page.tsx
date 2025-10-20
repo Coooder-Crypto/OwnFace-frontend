@@ -18,6 +18,8 @@ interface RegisterResponse {
   nonceHash: string;
   vectorLength: number;
   vectorChecksum: string;
+  vectorHash?: string;
+  vectorHashDecimal?: string;
   [key: string]: unknown;
 }
 
@@ -96,7 +98,8 @@ export default function RegisterPage() {
         result.data.commitmentHash &&
         result.data.nonceHash &&
         result.data.commitmentPoint &&
-        result.data.blinding
+        result.data.blinding &&
+        result.data.vectorHash
       ) {
         try {
           const tx = await writeContractAsync({
@@ -109,6 +112,7 @@ export default function RegisterPage() {
               result.data.nonceHash as `0x${string}`,
               result.data.commitmentPoint as `0x${string}`,
               result.data.blinding as `0x${string}`,
+              BigInt(result.data.vectorHash as string),
             ],
           });
           setTxHash(tx);

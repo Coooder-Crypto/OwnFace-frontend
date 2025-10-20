@@ -15,12 +15,40 @@ interface AuthResponse {
   distance: number;
   threshold: number;
   transcriptDigest: string;
+  transcriptHash?: string;
+  referenceHash?: string;
+  candidateHash?: string;
   commitmentHash: string;
   commitmentPoint: string;
   proofHash: string;
   proof: unknown;
   publicSignals: string[];
   [key: string]: unknown;
+}
+
+function parseGroth16Proof(proof: unknown) {
+  if (!proof || typeof proof !== "object") {
+    throw new Error("Missing Groth16 proof payload");
+  }
+
+  const payload = proof as {
+    pi_a: [string, string, string?];
+    pi_b: [[string, string], [string, string], [string, string]?];
+    pi_c: [string, string, string?];
+  };
+
+  if (!Array.isArray(payload.pi_a) || !Array.isArray(payload.pi_b) || !Array.isArray(payload.pi_c)) {
+    throw new Error("Invalid Groth16 proof format");
+  }
+
+  const proofA: [bigint, bigint] = [BigInt(payload.pi_a[0]), BigInt(payload.pi_a[1])];
+  const proofB: [[bigint, bigint], [bigint, bigint]] = [
+    [BigInt(payload.pi_b[0][0]), BigInt(payload.pi_b[0][1])],
+    [BigInt(payload.pi_b[1][0]), BigInt(payload.pi_b[1][1])],
+  ];
+  const proofC: [bigint, bigint] = [BigInt(payload.pi_c[0]), BigInt(payload.pi_c[1])];
+
+  return { proofA, proofB, proofC };
 }
 
 export default function AuthenticatePage() {
@@ -97,21 +125,33 @@ export default function AuthenticatePage() {
       if (
         registryAddress &&
         isConnected &&
-        result.data.transcriptDigest &&
-        result.data.proofHash
+        result.data.proof &&
+        result.data.proofHash &&
+        Array.isArray(result.data.publicSignals) &&
+        result.data.publicSignals.length === 6
       ) {
         try {
+          const { proofA, proofB, proofC } = parseGroth16Proof(result.data.proof);
+          const publicInputs: [bigint, bigint, bigint, bigint, bigint, bigint] = [
+            BigInt(result.data.publicSignals[0]),
+            BigInt(result.data.publicSignals[1]),
+            BigInt(result.data.publicSignals[2]),
+            BigInt(result.data.publicSignals[3]),
+            BigInt(result.data.publicSignals[4]),
+            BigInt(result.data.publicSignals[5]),
+          ];
+
           const tx = await writeContractAsync({
             address: registryAddress,
             abi: registryAbi,
             functionName: "authenticate",
             args: [
               keccak256(stringToBytes(userId)),
-              result.data.status === "accepted",
-              BigInt(result.data.distance),
-              BigInt(result.data.threshold),
-              result.data.transcriptDigest as `0x${string}`,
               result.data.proofHash as `0x${string}`,
+              proofA,
+              proofB,
+              proofC,
+              publicInputs,
             ],
           });
           setTxHash(tx);
