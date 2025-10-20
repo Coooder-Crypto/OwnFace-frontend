@@ -573,80 +573,16 @@ export default function WorkflowPage() {
 
   return (
     <div className="space-y-10">
-      <section className="glass-card relative overflow-hidden px-6 py-7">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.2),transparent_60%)]" />
-        <div className="relative space-y-3">
-          <span className="tag">Auth Workflow</span>
-          <h1 className="text-3xl font-semibold md:text-4xl">Register &amp; Prove</h1>
-          <p className="max-w-2xl text-sm text-slate-300/85">
-            Complete the two steps below to register a face embedding and submit a Groth16 proof on-chain.
-            Each step accepts a file upload or a live capture, and returns all calldata required by the deployed contracts.
-          </p>
-        </div>
-      </section>
 
-      <section className="glass-card border border-white/12 px-6 py-5 text-sm text-slate-200">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div className="space-y-2">
-            <div className="text-xs uppercase tracking-wide text-slate-400">Contract Targets (Sepolia)</div>
-            <div className="text-sm text-white">
-              Registry:{" "}
-              {registryAddress ? (
-                <a
-                  href={`${explorerBase}/address/${registryAddress}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="underline decoration-dotted underline-offset-4"
-                >
-                  {shorten(registryAddress)}
-                </a>
-              ) : (
-                <span className="text-rose-300">not configured</span>
-              )}
-            </div>
-            <div className="text-sm text-white">
-              Verifier:{" "}
-              {verifierAddress ? (
-                <a
-                  href={`${explorerBase}/address/${verifierAddress}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="underline decoration-dotted underline-offset-4"
-                >
-                  {shorten(verifierAddress)}
-                </a>
-              ) : (
-                <span className="text-amber-300">optional</span>
-              )}
-            </div>
-          </div>
-          <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-xs text-slate-300">
-            <div>
-              Explorer base:{" "}
-              <a
-                href={explorerBase}
-                target="_blank"
-                rel="noreferrer"
-                className="underline decoration-dotted underline-offset-4"
-              >
-                {explorerBase}
-              </a>
-            </div>
-            <div className="mt-1 text-slate-400">
-              Ensure your wallet is connected to Sepolia before submitting on-chain calls.
-            </div>
-          </div>
-        </div>
-      </section>
+  
 
-      <section className="space-y-12">
+      <section className="grid gap-6 lg:grid-cols-2">
         <div className="glass-card space-y-6 border border-white/12 px-6 py-7">
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="text-xl font-semibold text-white">Step 1 · Register Embedding</h2>
+              <h2 className="text-xl font-semibold text-white">Register</h2>
               <p className="text-sm text-slate-300/80">
-                Upload an embedding or capture a frame to derive a quantised vector, Pedersen commitment, and Poseidon hash.
-                Optionally push the record to OwnFaceRegistry.
+                Upload or capture an embedding, then register it on-chain with one click.
               </p>
             </div>
             <div className="flex items-center gap-3 text-sm text-slate-200">
@@ -792,12 +728,12 @@ export default function WorkflowPage() {
         </div>
       </div>
 
-      <div className="glass-card space-y-6 border border-white/12 px-6 py-7">
+        <div className="glass-card space-y-6 border border-white/12 px-6 py-7">
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="text-xl font-semibold text-white">Step 2 · Authenticate &amp; Prove</h2>
+              <h2 className="text-xl font-semibold text-white">Authenticate</h2>
               <p className="text-sm text-slate-300/80">
-                Use the same user ID to capture a fresh sample. The backend returns a Groth16 proof plus calldata you can submit to the registry.
+                Capture a fresh sample, generate the proof, and push the result on-chain.
               </p>
             </div>
             <div className="flex items-center gap-3 text-sm text-slate-200">

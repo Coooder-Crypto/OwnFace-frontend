@@ -11,7 +11,7 @@ interface CameraCaptureProps {
 
 export function CameraCapture({ onCapture, onClear }: CameraCaptureProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [stream, setStream] = useState<MediaStream | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const [captured, setCaptured] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,7 +24,7 @@ export function CameraCapture({ onCapture, onClear }: CameraCaptureProps) {
           mediaStream.getTracks().forEach((track) => track.stop());
           return;
         }
-        setStream(mediaStream);
+        streamRef.current = mediaStream;
         if (videoRef.current) {
           videoRef.current.srcObject = mediaStream;
         }
@@ -35,9 +35,10 @@ export function CameraCapture({ onCapture, onClear }: CameraCaptureProps) {
 
     return () => {
       active = false;
-      stream?.getTracks().forEach((track) => track.stop());
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
     };
-  }, [stream]);
+  }, []);
 
   const handleCapture = async () => {
     const video = videoRef.current;
@@ -71,7 +72,7 @@ export function CameraCapture({ onCapture, onClear }: CameraCaptureProps) {
           <img
             src={captured}
             alt="Captured preview"
-            className="h-64 w-full rounded-lg object-cover"
+            className="aspect-square w-full rounded-lg object-cover"
           />
         ) : (
           <video
@@ -79,7 +80,7 @@ export function CameraCapture({ onCapture, onClear }: CameraCaptureProps) {
             autoPlay
             playsInline
             muted
-            className="h-64 w-full rounded-lg bg-black object-cover"
+            className="aspect-square w-full rounded-lg bg-black object-cover"
           />
         )}
       </div>
